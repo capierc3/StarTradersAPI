@@ -1,26 +1,58 @@
 ﻿using IO.Swagger.Api;
 using IO.Swagger.Model;
 using SpaceTradersCLI;
+using Spectre.Console;
+using System.Threading.Tasks;
 
 class Program
 {
     static async Task Main(string[] args)
     {
-        await CLIUtils.TypeLineAsync("Initializing SpaceTraders CLI...");
-        Agent agent = LoginAndFetchAgentData();
-        CLIUtils.SlideUpClear();
-        await CLIUtils.TypeLineAsync($"Welcome back, {agent.Symbol}!");
-        await CLIUtils.TypeLineAsync($"Your current credits: {agent.Credits}");
-        await CLIUtils.TypeLineAsync("Fetching your fleet data...");
-        String input = Console.ReadLine();
+        SpaceTradersAPIHelper apiHelper = new SpaceTradersAPIHelper();
 
-    }
-    static Agent LoginAndFetchAgentData()
-    {
-        AgentsApi agentsApi = new AgentsApi();
-        agentsApi.Configuration.AccessToken = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGlmaWVyIjoiV0lMTF9OT1JUT04iLCJ2ZXJzaW9uIjoidjIuMy4wIiwicmVzZXRfZGF0ZSI6IjIwMjUtMTAtMTkiLCJpYXQiOjE3NjExNzYwNTgsInN1YiI6ImFnZW50LXRva2VuIn0.D_11yzfvv3ciDMfirW1cJwo--gZsYLPpDKmyOTiplNoRo3Xxt3mXW-cdG1qbxliuh1Fqxlo6cy50LwpTYPI9Gt29SYZfSaGhKPoJOP0zuA4H9lrmtj8jkibDZZSQ5dNNXGGN81g8asr_e2s38QaQ72G-bJx3eZYHvh1Lcka53uedBjLM942qGqs-0kQMI_hYMR2NMN6GpPXYTDAE-jeQ0pfzf3EAQ1Dcm25JoPnNQZ334MtEcflPNMJ8ZZf8FolLE16Ev5krjVGPu45F0gdfHfIlV83zxHrS0uwsDvkPfNVH1bfzdBRqQ-SAT1CtxyAxr-H1PfMwAyX2vAgaVT5u8U7y4PzzZgfC5a8DJMAub9_P2A7MHB7SBEeBQgdcbFRk5Z5aIrtehKBgOaQQsj9EFS5G8FNZVLqk4Fkrr_CGTTQ3YRser9HvV3Ymuon2EsWqqXNP9qxWPtAITWWjbORqoI1YHDsusHLfHX6_1JiSBbUC0Ous2GuOarnc6aXhgzxNNEU9EFBzqLkKoMTvjlMxhGPjno7nVSwNjzSc7L5WyzemDjRyNyxEcR5RN15ffLGMhJOgF1QCAeab7tphCzVWEbr8TjfPZT4KlffvObW-QgfUAmUXEJQkf4O_jDFwyFe3IR9H9Li7eFNtUGDJ1kY8UFS5KO4D-ngtCEdG1dEWlgg";
-        InlineResponse20011 response = agentsApi.GetMyAgent();
-        return response.Data;
-    }
+        AnsiConsole.Cursor.Hide();
+        Console.Title = "SpaceTraders Hub";
+        await CLIUtils.printBanner();
+        var cts = new CancellationTokenSource();
+        var spinnerTask = CLIUtils.LoadingPrint("INITIALIZING!", cts.Token);
+        Agent agent = apiHelper.GetAgentData();
+        List<Ship> fleet = apiHelper.getFleetData();
+        cts.Cancel();
+        await spinnerTask;
+        AnsiConsole.Clear();
+        await CLIUtils.Type($"WELCOME BACK AGENT {agent.Symbol}!");
+        await CLIUtils.Type($"CURRENT CREDITS: {agent.Credits}!");
+        var table = new Table();
+        table.ShowRowSeparators();
+        table.Border(TableBorder.Ascii2);
+        table.BorderColor(Color.Green);
+        AnsiConsole.Live(table)
+            .Start(ctx =>
+            {
+                table.AddColumn("[bold green]Ship Name[/]");
+                ctx.Refresh();
+                Thread.Sleep(500);
 
+                table.AddColumn("[bold green]Ship Type[/]");
+                ctx.Refresh();
+                Thread.Sleep(500);
+
+                foreach (var ship in fleet)
+                {
+                    table.AddEmptyRow();
+                    table.UpdateCell(table.Rows.Count - 1, 0, "[bold green]" + ship.Symbol + "[/]");
+                    ctx.Refresh();
+                    Thread.Sleep(500);
+                    table.UpdateCell(table.Rows.Count - 1, 1, "[bold green]" + ship.Frame.Name + "[/]");
+                    ctx.Refresh();
+                    Thread.Sleep(500);
+                }
+            });
+
+
+        while (true)
+        {
+
+        }
+    }
 }

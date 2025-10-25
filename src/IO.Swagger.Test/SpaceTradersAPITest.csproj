@@ -42,7 +42,7 @@ Contact: joel@spacetraders.io
   </ItemGroup>
 
   <ItemGroup>
-      <ProjectReference Include="..\IO.Swagger\IO.Swagger.csproj" />
+      <ProjectReference Include="..\IO.Swagger\SpaceTradersAPI.csproj" />
   </ItemGroup>
 </Project>
 

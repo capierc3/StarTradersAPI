@@ -8,7 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\IO.Swagger\IO.Swagger.csproj" />
+    <PackageReference Include="ini-parser" Version="2.5.2" />
+    <PackageReference Include="Spectre.Console" Version="0.52.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\IO.Swagger\SpaceTradersAPI.csproj" />
   </ItemGroup>
 
 </Project>
