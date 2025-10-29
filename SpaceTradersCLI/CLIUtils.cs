@@ -1,9 +1,4 @@
 ﻿using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SpaceTradersCLI
 {
@@ -13,12 +8,12 @@ namespace SpaceTradersCLI
         private const string FontColor = "bold green";
         private const int TopLine = 14;
 
-        public static async Task Type(string text)
+        public static void Type(string text, string fontColor = FontColor)
         {
             foreach (char c in text)
             {
-                AnsiConsole.Markup($"[{FontColor}]{c}[/]");
-                await Task.Delay(Delay);
+                AnsiConsole.Markup($"[{fontColor}]{c}[/]");
+                Thread.Sleep(Delay);
             }
             Console.WriteLine();
         }
@@ -42,7 +37,7 @@ namespace SpaceTradersCLI
             Console.WriteLine();
         }
 
-        public static async Task PrintBanner()
+        public static void PrintBanner()
         {
             string[] bannerLines = new string[]
             {
@@ -59,25 +54,26 @@ namespace SpaceTradersCLI
                 "|              / /  / /   / /_/ // /_/ //  __// /   (__  ) |",
                 "|             /_/  /_/    \\__,_/ \\__,_/ \\___//_/   /____/  |",
                 "+==========================================================+",
+                "                                                          ",
             };
             foreach (var line in bannerLines)
             {
                 AnsiConsole.MarkupLine($"[{FontColor}]{line}[/]");
-                await Task.Delay(100);
+                Thread.Sleep(100);
             }
         }
 
-        public static async Task PrintMenu(String[] menuItems)
+        public static void PrintMenu(String[] menuItems)
         {
             AnsiConsole.Cursor.Hide();
             for (int i = 0; i < menuItems.Length; i++)
             {
                 if (i == 0)
                 {
-                    await Type($"(*) {menuItems[i]}");
+                    Type($"(*) {menuItems[i]}");
                 }
                 else
-                    await Type($"( ) {menuItems[i]}");
+                    Type($"( ) {menuItems[i]}");
             }
         }
         
@@ -106,17 +102,19 @@ namespace SpaceTradersCLI
             while (Console.CursorTop > TopLine)
             {
                 AnsiConsole.Cursor.MoveUp(1);
-                for (int i = 50; i >= 0; i--)
-                {
-                    Console.SetCursorPosition(i, Console.CursorTop);
-                    Console.Write(" ");
-                    if (i > 0)
-                    {
-                        Console.SetCursorPosition(i - 1, Console.CursorTop);
-                    }
-                    Thread.Sleep(5);
-                }
-                Thread.Sleep(25);
+                Console.Write(new string(' ', Console.BufferWidth));
+                Console.SetCursorPosition(0, Console.CursorTop);
+                //for (int i = 50; i >= 0; i--)
+                //{
+                //    Console.SetCursorPosition(i, Console.CursorTop);
+                //    Console.Write(" ");
+                //    if (i > 0)
+                //    {
+                //        Console.SetCursorPosition(i - 1, Console.CursorTop);
+                //    }
+                //    Thread.Sleep(5);
+                //}
+                Thread.Sleep(50);
             }
         }
     }

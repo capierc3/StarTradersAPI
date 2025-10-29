@@ -1,33 +1,42 @@
 ﻿using IO.Swagger.Api;
 using IO.Swagger.Model;
-using IniParser;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using IniParser.Model;
 
 namespace SpaceTradersCLI
 {
     internal class SpaceTradersAPIHelper
     {
-        private string accessToken = "";
         private AgentsApi agentsApi;
         private FleetApi fleetApi;
-        private string AgentSymbol = "";
+        private GlobalApi globalApi;
+        private FactionsApi factionsApi;
+        private AppSettings appSettings;
 
-        public SpaceTradersAPIHelper()
+        public SpaceTradersAPIHelper(AppSettings appSettings)
         {
+            this.appSettings = appSettings;
             agentsApi = new AgentsApi();
             fleetApi = new FleetApi();
-            //get access token from config.ini
-            var parser = new IniParser.FileIniDataParser();
-            IniData data = parser.ReadFile("../config.ini");
-            accessToken = data["AUTH"]["AccessToken"];
-            //set access token for apis
-            agentsApi.Configuration.AccessToken = accessToken;
-            fleetApi.Configuration.AccessToken = accessToken;
+            globalApi = new GlobalApi();
+            factionsApi = new FactionsApi();
+            LoadTokens();
+        }
+
+        public void LoadTokens()
+        {
+            globalApi.Configuration.AccessToken = appSettings.GetCliAccessToken();
+            factionsApi.Configuration.AccessToken = appSettings.GetCliAccessToken();
+            agentsApi.Configuration.AccessToken = appSettings.GetAgentAccessToken();
+            fleetApi.Configuration.AccessToken = appSettings.GetAgentAccessToken();
+        }
+
+        public bool CheckAccount()
+        {
+            return !(string.IsNullOrEmpty(appSettings.GetCliAccessToken()));
+        }
+
+        public bool CheckAgent()
+        {
+            return !(string.IsNullOrEmpty(appSettings.GetAgentAccessToken()));
         }
 
         public Agent GetAgentData()
@@ -51,14 +60,10 @@ namespace SpaceTradersCLI
         {
             return agentsApi;
         }
-        
-        public void SetAgentSymbol(string symbol)
+
+        public GlobalApi GetGlobalApi()
         {
-            AgentSymbol = symbol;
-        }
-        public string GetAgentSymbol()
-        {
-            return AgentSymbol;
+            return globalApi;
         }
     }
 }
