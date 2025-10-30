@@ -16,7 +16,8 @@ class Program
         Console.Title = "SpaceTraders Hub";
         CLIUtils.PrintBanner();
         Login();
-        await MainMenu();
+        MainMenu();
+        while (true) {}
     }
 
     static void Login()
