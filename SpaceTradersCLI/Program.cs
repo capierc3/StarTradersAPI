@@ -8,6 +8,7 @@ class Program
     static AppSettings appSettings = new();
     static SpaceTradersAPIHelper apiHelper = new(appSettings);
     static ConsoleKey key;
+    static FactionSymbol selectedFaction;
     static async Task Main(string[] args)
     {
         AnsiConsole.Cursor.Hide();
@@ -15,7 +16,7 @@ class Program
         Console.Title = "SpaceTraders Hub";
         CLIUtils.PrintBanner();
         Login();
-        //MainMenu();
+        await MainMenu();
     }
 
     static void Login()
@@ -31,6 +32,7 @@ class Program
         {
             CreateAgentScreen();
         }
+        CLIUtils.ClearScreen();
     }
 
     static void CreateAppScreen()
@@ -47,21 +49,23 @@ class Program
 
     static void CreateAgentScreen()
     {
-        CLIUtils.Type("ERROR: NO AGENT DETECTED!!", "red");
-        string[] menuOptions =
-        [
-            "Create New Agent",
-            "Add Agent Token",
-            "Exit"
-        ];
-        Action[] menuActions =
-        [
-            CreateNewAgent,
-            AddAgentToken,
-            Exit,
-        ];
-        DisplayMenu(menuOptions, menuActions);
-        CLIUtils.ClearScreen();
+        while (!apiHelper.CheckAgent())
+        {
+            CLIUtils.Type("ERROR: NO AGENT DETECTED!!", "red");
+            string[] menuOptions =
+            [
+                "Create New Agent",
+                "Add Agent Token",
+                "Exit"
+            ];
+            Action[] menuActions =
+            [
+                CreateNewAgent,
+                AddAgentToken,
+                Exit,
+            ];
+            DisplayMenu(menuOptions, menuActions);
+        }
     }
     
     static async void MainMenu()
@@ -144,38 +148,64 @@ class Program
 
     static void CreateNewAgent()
     {
-        
+        CLIUtils.ClearScreen();
         CLIUtils.Type("ENTER YOUR DESIRED AGENT NAME:", "red");
         string inputName = AnsiConsole.Ask<string>("> ");
         string name = inputName;
         string[] menuOptions =
         [
-            "View Faction Info",
             "Pick Faction",
+            "View Full Faction Info",
             "Exit"
         ];
-        Action[] menuActions = new Action[]
-        {
-            ViewFactions,
+        Action[] menuActions =
+        [
             PickFaction,
+            ViewFactions,
             Exit,
-        };
+        ];
         DisplayMenu(menuOptions, menuActions);
-        FactionSymbol factionSymbol = FactionSymbol.ECHO; // Placeholder, should be set based on user choice
-        RegisterBody registerBody = new(factionSymbol, name);
-
-
+        RegisterBody registerBody = new(selectedFaction, name);
+        var response = apiHelper.CreateAgent(registerBody);
+        if (response.Data.Agent.Symbol == name)
+        {
+            CLIUtils.Type($"AGENT {name} CREATED SUCCESSFULLY!", "red");
+        }
+        else
+        {
+            CLIUtils.Type("ERROR CREATING AGENT. PLEASE TRY AGAIN.", "red");
+            Thread.Sleep(1000);
+            CLIUtils.ClearScreen();
+        }
     }
 
     static void ViewFactions()
     {
-        
+        CLIUtils.Type("COMING SOON. PLEASE TRY AGAIN LATER.", "yellow");
     }
 
     static void PickFaction()
     {
-        CLIUtils.Type("ENTER YOUR DESIRED FACTION:", "red");
-        
+        CLIUtils.ClearScreen();
+        CLIUtils.Type("FETECHING FACTIONS LIST..", "red");
+        var factions =  apiHelper.getFactions();
+        string[] menuOptions = new string[factions.Count + 1];
+        Action[] menuActions = new Action[factions.Count + 1];
+        for (int i = 0; i < factions.Count; i++)
+        {
+            int index = i;
+            menuOptions[i] = factions[i].Name;
+            ;
+            menuActions[i] = () =>
+            {
+                CLIUtils.Type($"YOU HAVE SELECTED FACTION: {factions[index].Name}", "red");
+                selectedFaction = factions[index].Symbol;
+            };
+        }
+        menuOptions[factions.Count] = "View Full Faction Info";
+        menuActions[factions.Count] = ViewFactions;
+        DisplayMenu(menuOptions, menuActions);
+
     }
 
     static void AddAgentToken()
@@ -198,6 +228,7 @@ class Program
             {
                 case ConsoleKey.Enter:
                     menuActions[selectedIndex]();
+                    menuChaged = true;
                     break;
                 case ConsoleKey.UpArrow:
                     selectedIndex--;

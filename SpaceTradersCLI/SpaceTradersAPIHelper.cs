@@ -1,4 +1,5 @@
 ﻿using IO.Swagger.Api;
+using IO.Swagger.Client;
 using IO.Swagger.Model;
 
 namespace SpaceTradersCLI
@@ -23,10 +24,19 @@ namespace SpaceTradersCLI
 
         public void LoadTokens()
         {
-            globalApi.Configuration.AccessToken = appSettings.GetCliAccessToken();
-            factionsApi.Configuration.AccessToken = appSettings.GetCliAccessToken();
-            agentsApi.Configuration.AccessToken = appSettings.GetAgentAccessToken();
-            fleetApi.Configuration.AccessToken = appSettings.GetAgentAccessToken();
+            Configuration cliConfig = new()
+            {
+                AccessToken = appSettings.GetCliAccessToken()
+            };
+            globalApi.Configuration = cliConfig;
+            factionsApi.Configuration = cliConfig;
+
+            Configuration agentConfig = new()
+            {
+                AccessToken = appSettings.GetAgentAccessToken()
+            };
+            agentsApi.Configuration = agentConfig;
+            fleetApi.Configuration = agentConfig;
         }
 
         public bool CheckAccount()
@@ -44,10 +54,24 @@ namespace SpaceTradersCLI
             InlineResponse20011 agentResponse = agentsApi.GetMyAgent();
             return agentResponse.Data;
         }
-
+        
         public Task<InlineResponse20011> GetAgentDataAsync()
         {
             return agentsApi.GetMyAgentAsync();
+        }
+
+        public InlineResponse201 CreateAgent(RegisterBody registerBody)
+        {
+            InlineResponse201 response = globalApi.Register(registerBody);
+            appSettings.SaveAgentAuth(response.Data.Token);
+            LoadTokens();
+            return response;
+        }
+
+        public List<Faction> getFactions()
+        {
+            InlineResponse2009 response = factionsApi.GetFactions();
+            return response.Data;
         }
 
         public List<Ship> getFleetData()

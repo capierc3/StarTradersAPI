@@ -104,16 +104,6 @@ namespace SpaceTradersCLI
                 AnsiConsole.Cursor.MoveUp(1);
                 Console.Write(new string(' ', Console.BufferWidth));
                 Console.SetCursorPosition(0, Console.CursorTop);
-                //for (int i = 50; i >= 0; i--)
-                //{
-                //    Console.SetCursorPosition(i, Console.CursorTop);
-                //    Console.Write(" ");
-                //    if (i > 0)
-                //    {
-                //        Console.SetCursorPosition(i - 1, Console.CursorTop);
-                //    }
-                //    Thread.Sleep(5);
-                //}
                 Thread.Sleep(50);
             }
         }
