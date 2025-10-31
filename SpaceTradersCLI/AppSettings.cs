@@ -6,7 +6,7 @@ namespace SpaceTradersCLI
     {
         private string cliAccessToken;
         private string agentAccessToken;
-        private string agentCreationDate;
+        private DateTime agentCreationDate;
 
         public AppSettings()
         {
@@ -25,7 +25,7 @@ namespace SpaceTradersCLI
             IniData data = parser.ReadFile("../config.ini");
             cliAccessToken = data["APP AUTH"]["AccessToken"];
             agentAccessToken = data["AGENT AUTH"]["AccessToken"];
-            agentCreationDate = data["AGENT AUTH"]["CreationDate"];
+            agentCreationDate = DateTime.Parse(data["AGENT AUTH"]["CreationDate"]);
         }
 
         public void SaveAppAuth(string inCLIAccessToken)
@@ -57,9 +57,15 @@ namespace SpaceTradersCLI
             return agentAccessToken;
         }
 
-        public string GetAgentCreationDate()
+        public DateTime GetAgentCreationDate()
         {
             return agentCreationDate;
+        }
+
+        //For Testing Purposes Only
+        public void SetAgentCreationDate(DateTime dateTime)
+        {
+            agentCreationDate = dateTime;
         }
     }
 }

@@ -8,12 +8,12 @@ namespace SpaceTradersCLI
         private const string FontColor = "bold green";
         private const int TopLine = 14;
 
-        public static void Type(string text, string fontColor = FontColor)
+        public static void Type(string text, string fontColor = FontColor, int delay = Delay)
         {
             foreach (char c in text)
             {
                 AnsiConsole.Markup($"[{fontColor}]{c}[/]");
-                Thread.Sleep(Delay);
+                Thread.Sleep(delay);
             }
             Console.WriteLine();
         }

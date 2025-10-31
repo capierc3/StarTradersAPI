@@ -9,7 +9,7 @@ class Program
     static SpaceTradersAPIHelper apiHelper = new(appSettings);
     static ConsoleKey key;
     static FactionSymbol selectedFaction;
-    static async Task Main(string[] args)
+    static void Main(string[] args)
     {
         AnsiConsole.Cursor.Hide();
         Console.CursorVisible = false;
@@ -22,18 +22,34 @@ class Program
 
     static void Login()
     {
-        if(!apiHelper.CheckAccount())
+        //Is the app token exists?
+        if (!apiHelper.CheckAccount())
         {
             CreateAppScreen();
         }
+        //Check API Status And Agent Validity
         var response = apiHelper.GetGlobalApi().GetStatus();
+        DateTime resetDate = DateTime.Parse(response.ResetDate);
+        DateTime currentTime = DateTime.Now;
+        DateTime nextReset = DateTime.Parse(response.ServerResets.Next);
         CLIUtils.Type($"API STATUS: {response.Status}");
-        CLIUtils.Type($"NEXT SERVER RESET: {response.ServerResets.Next}");
+        if (appSettings.GetAgentCreationDate() < resetDate)
+        {
+            CLIUtils.Type($"SERVER RESET!", "red");
+            CLIUtils.Type($"\n\"Every Big Bang ends one world and begins another.\"\n", "bold red", 50);
+            appSettings.SaveAgentAuth("");
+
+        } else
+        {
+            CLIUtils.Type($"NEXT SERVER RESET: {Math.Round((nextReset - currentTime).TotalDays, 3)} Days");
+        }
+        //Check if agent exists
         if (!apiHelper.CheckAgent())
         {
             CreateAgentScreen();
         }
-        CLIUtils.ClearScreen();
+        int daysUntillReset = (resetDate - currentTime).Days;
+
     }
 
     static void CreateAppScreen()
@@ -66,17 +82,14 @@ class Program
                 Exit,
             ];
             DisplayMenu(menuOptions, menuActions);
+            CLIUtils.ClearScreen();
         }
     }
-    
-    static async void MainMenu()
+
+    static void MainMenu()
     {
-        var cts = new CancellationTokenSource();
-        var spinnerTask = CLIUtils.LoadingPrint("INITIALIZING!", cts.Token);
         Agent agent = apiHelper.GetAgentData();
-        cts.Cancel();
-        await spinnerTask;
-        CLIUtils.Type($"WELCOME BACK AGENT {agent.Symbol}!");
+        CLIUtils.Type($"\nWELCOME BACK AGENT {agent.Symbol}!");
         CLIUtils.Type($"CURRENT CREDITS: {agent.Credits}!");
         string[] menuOptions =
         [
@@ -84,7 +97,7 @@ class Program
             "View Contracts",
             "Exit"
         ];
-        Action[] menuActions = 
+        Action[] menuActions =
         [
             ViewFleet,
             ViewContracts,
@@ -93,13 +106,11 @@ class Program
         DisplayMenu(menuOptions, menuActions);
     }
 
-    static async void ViewFleet()
+    static void ViewFleet()
     {
-        var cts = new CancellationTokenSource();
-        var spinnerTask = CLIUtils.LoadingPrint("FETCHING FLEET DATA...!", cts.Token);
+        CLIUtils.Type("\nFETCHING FLEET DATA...!\n");
         List<Ship> fleet = apiHelper.getFleetData();
-        cts.Cancel();
-        await spinnerTask;
+        CLIUtils.ClearScreen();
         var table = new Table();
         table.ShowRowSeparators();
         table.Border(TableBorder.Ascii2);
